@@ -5,6 +5,8 @@
 > TurtleBot3 Burger 기반의 자율주행 정찰 로봇으로, 실시간 SLAM과 YOLO 객체 탐지를 통합하여  
 > 미지의 전장 환경에서 군인·전차를 탐지하고 위협 위치를 자동으로 지도에 마킹합니다.
 
+> **공개 저장소 범위:** 팀 프로젝트 중 제가 담당한 Reactive 주행 알고리즘, 탐지 좌표 융합, YOLO 추론 및 모델 실험 결과를 중심으로 정리했습니다. Qt HUD와 장비별 실행 스크립트는 팀원의 개인 개발 환경에서 관리되어 이 저장소에는 포함되어 있지 않습니다.
+
 <br>
 
 <p align="center">
@@ -33,32 +35,19 @@
 - [Qt 전술 HUD](#-qt-전술-hud)
 - [성능 지표](#-성능-지표)
 - [기술 스택](#-기술-스택)
-- [설치 및 실행](#-설치-및-실행)
+- [개발 환경 및 시스템 실행 흐름](#-개발-환경-및-시스템-실행-흐름)
 - [트러블 슈팅](#-트러블-슈팅)
 - [향후 계획](#-향후-계획)
 
 ---
 
 ## 🎯 프로젝트 배경
-현대 전장 환경은 두 가지 구조적 위기에 직면해 있다.
+위험 환경을 사람이 직접 정찰하면 안전 문제가 발생하고, 원격 조작만으로는 미지 공간을 지속적으로 탐색하기 어렵습니다. RADAR는 TurtleBot3에 SLAM, 객체 탐지, 좌표 변환, Reactive 주행을 결합해 다음 흐름을 자동화한 팀 프로젝트입니다.
 
-1. 가용 병력의 급격한 감소
-우크라이나-러시아 전쟁에서 수만 명의 인명 피해가 발생하는 등 유인 전투 방식의 한계가 명확히 드러나고 있다.
-한국 역시 저출생 영향으로 가용 병력이 급격히 감소할 전망이다.
-연도가용 병력2021약 29만 명2040약 13만 명 (전망)
-이는 단순한 숫자 감소가 아닌, 실질적인 전력 공백으로 직결되는 안보 위기다.
-
-2. 군사력 운용의 비용 구조 문제
-인간 병력 1인 유지에는 훈련비, 급여, 의료·복지, 전사 시 보상까지 포함한 생애주기 비용이 상당하다.
-반면 무인 시스템은 초기 도입 이후 운용·유지비가 현저히 낮으며, 인명 손실에 따른 사회적·재정적 부담이 발생하지 않는다.
-구분유인 체계무인 체계임무당 운용 비용기준 (100%)약 1/10 수준인명 손실 리스크높음없음장기 유지 비용급여·복지·보상 포함유지·보수비만 발생
-
-미 국방부 연구에 따르면 무인 정찰 플랫폼의 임무당 비용은 유인 체계 대비 최대 1/10 수준으로, 장기적 관점에서 압도적인 비용 효율성을 지닌다.
-
-
-✅ 결론
-RADAR는 자율주행과 실시간 AI 탐지 기술을 결합하여, 인간 병력을 위험 환경에 직접 투입하지 않고도 전장 상황을 효과적으로 모니터링하는 무인 정찰 시스템이다.
-이는 병력 감소 문제를 보완하는 동시에, 군사력 운용의 경제성과 생존성을 동시에 제고하는 전략적 해결책이다.
+1. LiDAR로 미지 공간의 지도를 생성합니다.
+2. 카메라 영상에서 위협 객체를 탐지합니다.
+3. 탐지 결과를 지도 좌표로 변환해 위치를 표시합니다.
+4. 위협 구역을 회피하며 미탐색 구역을 우선 순찰합니다.
 
 ---
 
@@ -70,11 +59,9 @@ RADAR는 자율주행과 실시간 AI 탐지 기술을 결합하여, 인간 병�
 | 2 | 실시간 자율주행 (2) | [▶ YouTube](https://youtube.com/shorts/fysW5ICRKj0) |
 
 
-| Qt HUD 실행 화면 | 실제 주행 환경 |
-|:---:|:---:|
-| <img src="https://github.com/user-attachments/assets/602f4f2d-4024-4984-87dd-25ba4aba7e11" width="400"/> | <img src="assets/demo_field.jpg" width="400"/> |
-| **SLAM 맵 생성 결과** | **YOLO 탐지 결과** |
-| <img src="assets/slam_map.png" width="400"/> | <img src="assets/yolo_detection.png" width="400"/> |
+| Qt HUD 실행 화면 | 실제 주행 환경 | SLAM 맵 생성 결과 |
+|:---:|:---:|:---:|
+| <img src="https://github.com/user-attachments/assets/602f4f2d-4024-4984-87dd-25ba4aba7e11" width="320"/> | <img src="assets/demo_field.jpg" width="320"/> | <img src="assets/slam_map.png" width="320"/> |
 
 ---
 
@@ -85,7 +72,7 @@ RADAR는 자율주행과 실시간 AI 탐지 기술을 결합하여, 인간 병�
 
 | 역할 | 이름 | 담당 |
 |:---:|:---:|:---|
-| **TL** | 윤성진 | SLAM · 실시간 맵핑 및 자율주행 |
+| **TL** | 윤성진 | SLAM · 실시간 매핑 및 자율주행 |
 | **DTL / PM** | 배현규 | AI Perception · YOLO 학습 · Depth Estimation ML |
 | **LE** | 안형준 | Overall Development · 시스템 통합 · Reactive 알고리즘 |
 | **AE** | 박상호 | Simul UI/UX · Qt HUD · Gazebo 시뮬레이션 |
@@ -96,33 +83,20 @@ RADAR는 자율주행과 실시간 AI 탐지 기술을 결합하여, 인간 병�
 
 <img src="assets/System Architecture.png" width="991" height="753"/>
 
-### 실행 순서
+### 시스템 실행 흐름
 
-```bash
-# 1. Pi: 로봇 구동
-bash ~/run_bringup.sh
+1. Raspberry Pi에서 TurtleBot3 bringup과 YOLO 추론 노드를 실행
+2. Ubuntu PC에서 SLAM Toolbox를 실행하고 `map` 프레임 생성 확인
+3. 탐지 좌표 융합 노드(`marker.py`)와 Reactive 주행 노드(`patrol.py`) 실행
+4. RViz2와 Qt HUD에서 지도, 탐지 결과, 로봇 상태를 확인
 
-# 2. Pi: YOLO 추론 시작
-bash ~/run_yolo.sh
-
-# 3. Ubuntu: SLAM 시작
-bash ~/bin/run_slam.sh
-
-# 4. Ubuntu: map 프레임 생성 확인 후 마커 노드 시작
-bash ~/run_marker.sh
-
-# 5. Ubuntu: 자율주행 노드 시작
-bash ~/run_reactive.sh
-
-# 6. Ubuntu: RViz 시각화
-bash ~/run_rviz.sh
-```
+장비별 셸 스크립트와 Qt HUD 소스는 팀원의 개인 Linux 환경에서 관리되었습니다. 이 저장소에는 제가 담당한 핵심 Python 노드와 학습·분석 자료를 공개합니다.
 
 ---
 
 ## ✨ 주요 기능
 
-### 1. 실시간 SLAM 맵핑
+### 1. 실시간 SLAM 매핑
 - LDS-02 LiDAR 기반 사전 지도 없이 실시간 점유 격자 지도 생성
 - SLAM Toolbox (ROS2 Humble) 적용
 - RViz2를 통한 실시간 맵 시각화
@@ -145,7 +119,7 @@ bash ~/run_rviz.sh
 
 ### 5. Qt 전술 HUD 통합 모니터링
 - 레이더 스코프 / YOLO 카메라 / SLAM 맵 / 나침반 / 적 위치 통합 표시
-- 텔레오프(수동 조작) 모드 전환 지원
+- Teleop(수동 조작) 모드 전환 지원
 - 배터리 잔량 실시간 모니터링
 
 ---
@@ -155,7 +129,7 @@ bash ~/run_rviz.sh
 ### YOLO 학습 과정
 
 
-| 단계 | 데이터셋 | Soldier mAP50 | Tank mAP50 | mAP60 |
+| 단계 | 데이터셋 | Soldier mAP50 | Tank mAP50 | mAP50 |
 |:---:|:---:|:---:|:---:|:---:|
 | 1차 (Roboflow, 900장) | 외부 데이터 | 0.097 | 0.073 | 0.040 |
 | 2차 (직접 수집, 525장) | 직접 촬영 | 0.835 | 0.895 | 0.865 |
@@ -205,7 +179,7 @@ Depth Camera의 부하·노이즈 문제를 해결하기 위해 ML 기반 거리
 4. 위험 좌표 40cm 이내 접근 시 유턴 시작
 5. `STOP(3s) → ROTATE(5s) → ESCAPE(2s) → FORWARD(1s)` 순서로 회피
 
-### 정상 주행 with 커버리지 최적화
+### 정상 주행 및 커버리지 최적화
 1. 벽 보정 주행 (좌우 critical distance 기반)
 2. Visited Grid Map으로 지나온 셀 카운트 기록
 3. 갈림길에서 방문 횟수가 적은 방향 우선 선택
@@ -228,7 +202,7 @@ Depth Camera의 부하·노이즈 문제를 해결하기 위해 ML 기반 거리
 | LIDAR Map | SLAM 점유 격자 지도 표시 및 마커 |
 | Enemy Info | 탐지 적 수 / 좌표 표시 |
 | Battery State | 배터리 잔량 모니터링 |
-| Manual Mode | 텔레오프 수동 조작 전환 |
+| Manual Mode | Teleop 수동 조작 전환 |
 
 ---
 
@@ -238,7 +212,7 @@ Depth Camera의 부하·노이즈 문제를 해결하기 위해 ML 기반 거리
 
 | 지표 | Best Case | Average | 목표값 |
 |:---:|:---:|:---:|:---:|
-| 맵 탐색율 | **96.2%** | 73.4% | 75% |
+| 맵 탐색률 | **96.2%** | 73.4% | 75% |
 | 마커 위치 오차 평균 | **10.5cm** | 22.3cm | 20~30cm |
 | 객체 미탐지 수 | **1개** | 1.7개 | 1개 이하 |
 
@@ -289,7 +263,7 @@ Depth Camera의 부하·노이즈 문제를 해결하기 위해 ML 기반 거리
 
 ---
 
-## 🚀 설치 및 실행
+## 🚀 개발 환경 및 시스템 실행 흐름
 
 ### 환경 요구사항
 
@@ -320,42 +294,21 @@ pip install ncnn --break-system-packages
 ### 저장소 클론
 
 ```bash
-git clone https://github.com/[YOUR_REPO]/radar.git
-cd radar
+git clone https://github.com/frogjun12-jpg/RADAR.git
+cd RADAR
 ```
 
-### 실행 스크립트 권한 설정
+### 공개 코드 진입점
 
-```bash
-chmod +x ~/run_bringup.sh
-chmod +x ~/run_yolo.sh
-chmod +x ~/bin/run_slam.sh
-chmod +x ~/run_marker.sh
-chmod +x ~/run_reactive.sh
-chmod +x ~/run_rviz.sh
-```
+| 파일 | 역할 |
+|---|---|
+| `yolo_picamera_to_ubuntu_compressed_default.py` | Raspberry Pi 카메라 기반 YOLO 추론 및 ROS2 발행 |
+| `marker.py` | 탐지 결과와 로봇 좌표를 융합해 지도 마커 생성 |
+| `patrol.py` | 장애물·위협 구역을 반영한 Reactive 자율 순찰 |
+| `Depth_Camera/` | Depth 데이터 수집 및 거리 추정 실험 |
+| `YOLO/train/` | YOLO 학습 및 Knowledge Distillation 실험 |
 
-### 실행 (순서 중요)
-
-```bash
-# [Pi 터미널 1] TurtleBot3 구동
-bash ~/run_bringup.sh
-
-# [Pi 터미널 2] YOLO 추론 노드
-bash ~/run_yolo.sh
-
-# [Ubuntu 터미널 1] SLAM
-bash ~/bin/run_slam.sh
-
-# [Ubuntu 터미널 2] map 프레임 생성 확인 후
-bash ~/run_marker.sh
-
-# [Ubuntu 터미널 3] 자율주행
-bash ~/run_reactive.sh
-
-# [Ubuntu 터미널 4] RViz 시각화
-bash ~/run_rviz.sh
-```
+전체 시스템은 TurtleBot3 bringup → YOLO 추론 → SLAM → 좌표 융합 → Reactive 주행 → 시각화 순서로 실행했습니다. 하드웨어 주소, 모델 경로, ROS2 토픽은 사용 환경에 맞게 조정해야 하며, 팀원 환경에서 사용한 셸 스크립트는 공개 저장소에 포함되어 있지 않습니다.
 
 ### 포트 설정 (Pi - 재시작 시마다 확인)
 
@@ -375,30 +328,16 @@ ros2 run nav2_map_server map_saver_cli -f ~/maps/patrol_map
 ## 📁 프로젝트 구조
 
 ```
-radar/
-├── autonomous_driving/
-│   ├── reactive_patrol_node.py       # 자율주행 메인 노드
-│   ├── detection_marker_node.py      # YOLO-SLAM 융합 마커 노드
-│   └── ml/
-│       ├── xgb_y_model.pkl           # XGBoost Depth 추정 모델
-│       └── xgb_feature_y_cols.pkl    # Feature 컬럼 정보
-│
-├── project/
-│   └── yolo_picamera_to_ubuntu_compressed_default.py  # Pi YOLO 추론 노드
-│
-├── yolo/
-│   ├── weights/depth/                # YOLO .pt 가중치
-│   └── ncnn/                         # NCNN 변환 모델
-│
-├── qt_hud/                           # Qt 전술 HUD 소스
-│
-├── run_bringup.sh
-├── run_yolo.sh
-├── run_marker.sh
-├── run_reactive.sh
-├── run_rviz.sh
-└── bin/
-    └── run_slam.sh
+RADAR/
+├── patrol.py                         # Reactive 자율 순찰 노드
+├── marker.py                         # YOLO-SLAM 좌표 융합 및 마커 노드
+├── yolo_cam.py                       # Ubuntu 카메라 YOLO 노드
+├── yolo_picamera_to_ubuntu_compressed_default.py
+│                                       # Raspberry Pi YOLO 노드
+├── Depth_Camera/                     # Depth 수집·분석 코드
+├── DepthML/                          # 거리 추정 데이터와 모델 실험
+├── YOLO/train/                       # YOLO 학습·KD 노트북
+└── assets/                           # README 이미지
 ```
 
 ---
@@ -444,7 +383,7 @@ radar/
 - [ ] Qt GUI UX 추가 개선
 
 ### Future 목표 (장기)
-- [ ] **Multi-SLAM** — 복수 로봇 협력 맵핑
+- [ ] **Multi-SLAM** — 복수 로봇 협력 매핑
 - [ ] **3D Mapping** — 3D LiDAR 기반 입체 지도
 - [ ] **Visual SLAM** — 카메라 기반 SLAM
 - [ ] **SDV 성능 향상** — 더 빠르고 안정적인 자율주행
